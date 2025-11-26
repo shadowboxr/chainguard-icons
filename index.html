@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chainguard Icons</title>
-     <!-- Meta Tags for Social Sharing -->
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="data:image/png;base64,UklGRgQDAABXRUJQVlA4WAoAAAAgAAAAHwAAHwAASUNDUMgBAAAAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADZWUDggFgEAABAIAJ0BKiAAIAA+USKPRKOiIZQFVDgFBLYATpmaGBvVfxA/FVsgFQW+UBcgHwAOsrzBJnW+AfsAtzW7Lih00Qh+rysgmbIrGwAA/vz/PP+nzz/uPc7I7/x1c6Y01awTDHOlPzM4rQ1Gr//4MxwZjgzH/jVv+Jj0I4P+/etapR2/fcS9TVAORCH/TOJPNivKUHfT53Bttv/UX0ZPKIRgvWP/4xfQiY7f86UtnF39vfS+GCQX4tDdn3/VlquTh+CN4vFHnh4svM0aWwP3d4aCj7A3+RSfZ1GQn2uXcD1fSRTH9UWBNuBoClmL8v0PTyGfmWg9oj5/vbyCZlWEc+af/b9SHLou4T3LZGU/f1fv9s4omWm9AAAA">
+    
+    <!-- Meta Tags for Social Sharing -->
     <meta name="description" content="Browse and download Chainguard's icon library in multiple colors and formats.">
     <meta property="og:title" content="Chainguard Icons">
     <meta property="og:description" content="Browse and download Chainguard's icon library in multiple colors and formats.">
@@ -1082,8 +1086,8 @@
                 }
             });
 
-            // Switch to light mode if ink is selected
-            if (color === 'ink') {
+            // Switch to light mode if ink or blurple is selected
+            if (color === 'ink' || color === 'blurple') {
                 document.body.classList.add('light-mode');
             } else {
                 document.body.classList.remove('light-mode');
@@ -1157,14 +1161,12 @@
         function downloadSVG() {
             if (!selectedIcon) return;
             
-            // Get the current colored SVG
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = selectedIcon.svg;
             const colorHex = COLORS[currentColor];
             
             const svgElement = tempDiv.querySelector('svg');
             
-            // Apply color
             tempDiv.querySelectorAll('path, circle, rect, polygon, polyline, line, ellipse').forEach(el => {
                 if (el.hasAttribute('fill') && el.getAttribute('fill') !== 'none') {
                     el.setAttribute('fill', colorHex);
@@ -1174,7 +1176,6 @@
                 }
             });
             
-            // Update viewBox to match width/height with no padding
             const width = svgElement.getAttribute('width') || '32';
             const height = svgElement.getAttribute('height') || '32';
             svgElement.setAttribute('viewBox', `0 0 ${width} ${height}`);
@@ -1194,14 +1195,12 @@
         function downloadPNG() {
             if (!selectedIcon) return;
 
-            // Create a temporary div to hold the colored SVG
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = selectedIcon.svg;
             const colorHex = COLORS[currentColor];
             
             const svgElement = tempDiv.querySelector('svg');
             
-            // Apply current color to the SVG
             tempDiv.querySelectorAll('path, circle, rect, polygon, polyline, line, ellipse').forEach(el => {
                 if (el.hasAttribute('fill') && el.getAttribute('fill') !== 'none') {
                     el.setAttribute('fill', colorHex);
@@ -1211,33 +1210,26 @@
                 }
             });
             
-            // Get original dimensions
             const originalWidth = parseFloat(svgElement.getAttribute('width') || '32');
             const originalHeight = parseFloat(svgElement.getAttribute('height') || '32');
             
-            // Set to 1000x1000 and update viewBox to match original aspect ratio with no padding
             svgElement.setAttribute('width', '1000');
             svgElement.setAttribute('height', '1000');
             svgElement.setAttribute('viewBox', `0 0 ${originalWidth} ${originalHeight}`);
             
-            // Convert SVG to data URL
             const svgData = new XMLSerializer().serializeToString(svgElement);
             const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
             const svgUrl = URL.createObjectURL(svgBlob);
 
-            // Create an image element
             const img = new Image();
             img.onload = function() {
-                // Create canvas at 1000x1000
                 const canvas = document.createElement('canvas');
                 canvas.width = 1000;
                 canvas.height = 1000;
                 const ctx = canvas.getContext('2d');
                 
-                // Draw the image on canvas (it will fill the entire 1000x1000 with no padding)
                 ctx.drawImage(img, 0, 0, 1000, 1000);
                 
-                // Convert canvas to PNG and download
                 canvas.toBlob(function(blob) {
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
@@ -1263,28 +1255,22 @@
             colorMenu.classList.toggle('active');
         });
 
-        document.addEventListener('click', () => {
-            colorMenu.classList.remove('active');
-        });
-
-        colorMenu.addEventListener('click', (e) => {
-            e.stopPropagation();
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.color-dropdown')) {
+                colorMenu.classList.remove('active');
+            }
         });
 
         document.querySelectorAll('.color-option').forEach(option => {
             option.addEventListener('click', () => {
                 const color = option.dataset.color;
                 
-                // Update selected state
                 document.querySelectorAll('.color-option').forEach(opt => {
                     opt.classList.remove('selected');
                 });
                 option.classList.add('selected');
                 
-                // Update color
                 setIconColor(color);
-                
-                // Close menu
                 colorMenu.classList.remove('active');
             });
         });
@@ -1302,7 +1288,7 @@
             }
         });
 
-        // Initialize with white color
+        // Initialize
         setIconColor('white');
         renderIcons();
     </script>
