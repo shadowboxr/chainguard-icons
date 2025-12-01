@@ -901,8 +901,11 @@
             const grid = document.getElementById('iconsGrid');
             grid.innerHTML = '';
             const icons = getCurrentIcons();
+            
+            // Ensure icons are in the correct order (custom first, then alphabetical)
+            const sortedIcons = sortObjectByKeys(icons);
 
-            Object.keys(icons).forEach(iconName => {
+            Object.keys(sortedIcons).forEach(iconName => {
                 const card = document.createElement('div');
                 card.className = 'icon-card';
                 card.dataset.icon = iconName;
@@ -1015,14 +1018,28 @@
             pendingAction = null;
         }
 
-        // Helper function to sort object keys alphabetically
+        // Helper function to sort object keys alphabetically, but keep custom icons first
         function sortObjectByKeys(obj) {
-            return Object.keys(obj)
-                .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
-                .reduce((sorted, key) => {
-                    sorted[key] = obj[key];
-                    return sorted;
-                }, {});
+            const customIcons = ['CG-containers', 'CG-libraries', 'CG-vms', 'linky'];
+            const keys = Object.keys(obj);
+            
+            // Separate custom icons and regular icons
+            const customKeys = keys.filter(key => customIcons.includes(key));
+            const regularKeys = keys.filter(key => !customIcons.includes(key));
+            
+            // Sort custom icons in their defined order
+            customKeys.sort((a, b) => customIcons.indexOf(a) - customIcons.indexOf(b));
+            
+            // Sort regular icons alphabetically
+            regularKeys.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+            
+            // Combine: custom icons first, then alphabetical
+            const sortedKeys = [...customKeys, ...regularKeys];
+            
+            return sortedKeys.reduce((sorted, key) => {
+                sorted[key] = obj[key];
+                return sorted;
+            }, {});
         }
 
                 async function confirmRename() {
