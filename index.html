@@ -825,15 +825,14 @@
                     throw new Error('Failed to save changes');
                 }
 
-                // Show save indicator and reload fresh data
+                // Show save indicator
                 const saveIndicator = document.getElementById('saveIndicator');
                 saveIndicator.classList.add('active');
                 setTimeout(() => {
                     saveIndicator.classList.remove('active');
                 }, 2000);
                 
-                // Reload icons from server to ensure we have latest data
-                await loadIcons();
+                // Don't reload - local data is already correct and GitHub CDN takes time to update
 
             } catch (error) {
                 console.error('Error saving icons:', error);
