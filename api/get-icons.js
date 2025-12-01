@@ -17,20 +17,20 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Fetch the icons.json file from the GitHub repository
+    // Fetch the icons.json file from the GitHub API (not raw - avoids CDN cache)
     const owner = process.env.GITHUB_OWNER;
     const repo = process.env.GITHUB_REPO;
     const branch = process.env.GITHUB_BRANCH || 'main';
+    const token = process.env.GITHUB_TOKEN;
     
-    // Add timestamp to bypass cache
-    const timestamp = Date.now();
-    const url = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/data/icons.json?t=${timestamp}`;
+    // Use GitHub API instead of raw endpoint to avoid caching
+    const url = `https://api.github.com/repos/${owner}/${repo}/contents/data/icons.json?ref=${branch}`;
     
     const response = await fetch(url, {
       headers: {
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
+        'Authorization': token ? `Bearer ${token}` : '',
+        'Accept': 'application/vnd.github.v3+json',
+        'Cache-Control': 'no-cache'
       }
     });
 
@@ -38,7 +38,11 @@ export default async function handler(req, res) {
       throw new Error(`Failed to fetch icons data: ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const fileData = await response.json();
+    
+    // Decode the base64 content
+    const content = Buffer.from(fileData.content, 'base64').toString('utf8');
+    const data = JSON.parse(content);
     
     return res.status(200).json(data);
   } catch (error) {
