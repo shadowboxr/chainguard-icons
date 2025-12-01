@@ -784,7 +784,9 @@
         // Load icons from API on page load
         async function loadIcons() {
             try {
-                const response = await fetch('/api/get-icons');
+                // Add timestamp to bypass cache
+                const timestamp = Date.now();
+                const response = await fetch(`/api/get-icons?t=${timestamp}`);
                 if (!response.ok) {
                     throw new Error('Failed to load icons');
                 }
@@ -823,12 +825,15 @@
                     throw new Error('Failed to save changes');
                 }
 
-                // Show save indicator
+                // Show save indicator and reload fresh data
                 const saveIndicator = document.getElementById('saveIndicator');
                 saveIndicator.classList.add('active');
                 setTimeout(() => {
                     saveIndicator.classList.remove('active');
                 }, 2000);
+                
+                // Reload icons from server to ensure we have latest data
+                await loadIcons();
 
             } catch (error) {
                 console.error('Error saving icons:', error);
