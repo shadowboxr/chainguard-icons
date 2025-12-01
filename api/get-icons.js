@@ -22,11 +22,15 @@ export default async function handler(req, res) {
     const repo = process.env.GITHUB_REPO;
     const branch = process.env.GITHUB_BRANCH || 'main';
     
-    const url = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/data/icons.json`;
+    // Add timestamp to bypass cache
+    const timestamp = Date.now();
+    const url = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/data/icons.json?t=${timestamp}`;
     
     const response = await fetch(url, {
       headers: {
-        'Cache-Control': 'no-cache'
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
       }
     });
 
