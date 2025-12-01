@@ -1015,7 +1015,17 @@
             pendingAction = null;
         }
 
-        async function confirmRename() {
+        // Helper function to sort object keys alphabetically
+        function sortObjectByKeys(obj) {
+            return Object.keys(obj)
+                .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+                .reduce((sorted, key) => {
+                    sorted[key] = obj[key];
+                    return sorted;
+                }, {});
+        }
+
+                async function confirmRename() {
             const newName = document.getElementById('newNameInput').value.trim();
             if (!newName) {
                 alert('Please enter a valid name');
@@ -1043,6 +1053,10 @@
                 CHAINGUARD_SPECIFIC[newName] = CHAINGUARD_SPECIFIC[oldName];
                 delete CHAINGUARD_SPECIFIC[oldName];
             }
+            
+            // Re-sort both objects alphabetically
+            ALL_ICONS = sortObjectByKeys(ALL_ICONS);
+            CHAINGUARD_SPECIFIC = sortObjectByKeys(CHAINGUARD_SPECIFIC);
             
             closeRenameModal();
             renderIcons();
@@ -1077,6 +1091,8 @@
             
             if (pendingAction.type === 'add') {
                 CHAINGUARD_SPECIFIC[pendingAction.iconName] = ALL_ICONS[pendingAction.iconName];
+                // Re-sort to maintain alphabetical order
+                CHAINGUARD_SPECIFIC = sortObjectByKeys(CHAINGUARD_SPECIFIC);
             } else if (pendingAction.type === 'remove') {
                 delete CHAINGUARD_SPECIFIC[pendingAction.iconName];
             }
