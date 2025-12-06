@@ -857,7 +857,11 @@
             ink: '#0d161c'
         };
 
-        const FIXED_COLOR_ICONS = ['CG-containers', 'CG-libraries', 'CG-vms'];
+        const FIXED_COLOR_ICONS = {
+            'CG-containers': '#6226FB',  // Blurple
+            'CG-libraries': '#EB02E0',   // Magenta
+            'CG-vms': '#00A0EB'          // Cyan
+        };
         const ADMIN_PASSWORD = 'LinkyIconUpdate!';
 
         let selectedIcon = null;
@@ -940,7 +944,18 @@
                 const card = svg.closest('.icon-card');
                 const iconName = card ? card.dataset.icon : null;
                 
-                if (iconName && FIXED_COLOR_ICONS.includes(iconName)) {
+                // Skip CG icons - they keep their original brand colors
+                if (iconName && FIXED_COLOR_ICONS[iconName]) {
+                    // Force CG icons to their original colors
+                    const originalColor = FIXED_COLOR_ICONS[iconName];
+                    svg.querySelectorAll('path, circle, rect, polygon, polyline, line, ellipse').forEach(el => {
+                        if (el.hasAttribute('fill') && el.getAttribute('fill') !== 'none') {
+                            el.setAttribute('fill', originalColor);
+                        }
+                        if (el.hasAttribute('stroke')) {
+                            el.setAttribute('stroke', originalColor);
+                        }
+                    });
                     return;
                 }
                 
@@ -955,7 +970,7 @@
             });
 
             const modalIconName = selectedIcon ? selectedIcon.name : null;
-            if (!modalIconName || !FIXED_COLOR_ICONS.includes(modalIconName)) {
+            if (!modalIconName || !FIXED_COLOR_ICONS[modalIconName]) {
                 document.querySelectorAll('.modal-icon svg path, .modal-icon svg circle, .modal-icon svg rect, .modal-icon svg polygon, .modal-icon svg polyline, .modal-icon svg line, .modal-icon svg ellipse').forEach(el => {
                     if (el.hasAttribute('fill') && el.getAttribute('fill') !== 'none') {
                         el.setAttribute('fill', colorHex);
@@ -1277,7 +1292,8 @@
             
             const svgElement = tempDiv.querySelector('svg');
             
-            if (!FIXED_COLOR_ICONS.includes(selectedIcon.name)) {
+            if (!FIXED_COLOR_ICONS[selectedIcon.name]) {
+                // Regular icon - apply selected color
                 tempDiv.querySelectorAll('path, circle, rect, polygon, polyline, line, ellipse').forEach(el => {
                     if (el.hasAttribute('fill') && el.getAttribute('fill') !== 'none') {
                         el.setAttribute('fill', colorHex);
@@ -1298,7 +1314,7 @@
             const a = document.createElement('a');
             a.href = url;
             
-            const filename = FIXED_COLOR_ICONS.includes(selectedIcon.name) 
+            const filename = FIXED_COLOR_ICONS[selectedIcon.name] 
                 ? `${selectedIcon.name}.svg`
                 : `${selectedIcon.name}-${currentColor}.svg`;
             a.download = filename;
@@ -1318,7 +1334,8 @@
             
             const svgElement = tempDiv.querySelector('svg');
             
-            if (!FIXED_COLOR_ICONS.includes(selectedIcon.name)) {
+            if (!FIXED_COLOR_ICONS[selectedIcon.name]) {
+                // Regular icon - apply selected color
                 tempDiv.querySelectorAll('path, circle, rect, polygon, polyline, line, ellipse').forEach(el => {
                     if (el.hasAttribute('fill') && el.getAttribute('fill') !== 'none') {
                         el.setAttribute('fill', colorHex);
@@ -1354,7 +1371,7 @@
                     const a = document.createElement('a');
                     a.href = url;
                     
-                    const filename = FIXED_COLOR_ICONS.includes(selectedIcon.name) 
+                    const filename = FIXED_COLOR_ICONS[selectedIcon.name] 
                         ? `${selectedIcon.name}.png`
                         : `${selectedIcon.name}-${currentColor}.png`;
                     a.download = filename;
