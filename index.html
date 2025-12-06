@@ -592,6 +592,50 @@
             color: #202124;
         }
 
+
+        input[type="file"] {
+            cursor: pointer;
+        }
+
+        input[type="file"]::file-selector-button {
+            padding: 8px 16px;
+            background: #6226fb;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Gellix', sans-serif;
+            font-weight: 700;
+            margin-right: 12px;
+        }
+
+        input[type="file"]::file-selector-button:hover {
+            background: #5020d0;
+        }
+
+        body.light-mode input[type="file"] {
+            background: white;
+            border: 1px solid #dadce0;
+            color: #202124;
+        }
+
+        body.light-mode input[type="file"]::file-selector-button {
+            background: #1a73e8;
+        }
+
+        body.light-mode input[type="file"]::file-selector-button:hover {
+            background: #1765cc;
+        }
+
+        #uploadPreview svg {
+            width: 48px;
+            height: 48px;
+        }
+
+        body.light-mode #uploadPreview {
+            background: #f8f9fa;
+        }
+
         @media (max-width: 768px) {
             .header {
                 padding: 20px 24px;
@@ -643,6 +687,9 @@
                     </div>
                     <div class="dropdown-option" data-action="logout" style="display: none;">
                         <span>🔓 Logout</span>
+                    </div>
+                    <div class="dropdown-option" data-action="upload" style="display: none;">
+                        <span>📤 Upload Icon</span>
                     </div>
                 </div>
             </div>
@@ -738,6 +785,37 @@
             </div>
             <div class="modal-text" id="confirmText"></div>
             <button class="modal-btn" id="confirmButton" onclick="confirmAction()">Confirm</button>
+        </div>
+    </div>
+
+
+    <!-- Upload Icon Modal -->
+    <div class="modal" id="uploadModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Upload New Icon</h2>
+                <button class="close-btn" onclick="closeUploadModal()">&times;</button>
+            </div>
+            <div class="modal-text">Upload an SVG file to add a new icon to the library.</div>
+            
+            <input type="text" class="modal-input" id="uploadIconName" placeholder="Icon name (e.g. my-icon)">
+            
+            <div style="margin: 16px 0;">
+                <label for="svgFileInput" style="display: block; margin-bottom: 8px; font-size: 14px;">Choose SVG file:</label>
+                <input type="file" id="svgFileInput" accept=".svg" style="width: 100%; padding: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 4px; color: #ffffff; font-family: 'Gellix', sans-serif;">
+            </div>
+            
+            <div class="modal-text" style="font-size: 12px; color: rgba(255, 255, 255, 0.6); margin-top: 8px;">
+                Preview:
+            </div>
+            <div id="uploadPreview" style="display: flex; justify-content: center; padding: 24px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; min-height: 100px; align-items: center;">
+                <span style="color: rgba(255, 255, 255, 0.4); font-size: 14px;">No file selected</span>
+            </div>
+            
+            <div style="display: flex; gap: 12px; margin-top: 16px;">
+                <button class="modal-btn" onclick="confirmUpload()" id="uploadButton" disabled>Upload Icon</button>
+                <button class="download-btn secondary" onclick="closeUploadModal()">Cancel</button>
+            </div>
         </div>
     </div>
 
@@ -990,6 +1068,7 @@
                 document.getElementById('adminBadge').classList.add('active');
                 document.querySelector('[data-action="login"]').style.display = 'none';
                 document.querySelector('[data-action="logout"]').style.display = 'block';
+                document.querySelector('[data-action="upload"]').style.display = 'block';
                 closePasswordModal();
                 renderIcons();
             } else {
@@ -1003,6 +1082,7 @@
             document.getElementById('adminBadge').classList.remove('active');
             document.querySelector('[data-action="login"]').style.display = 'block';
             document.querySelector('[data-action="logout"]').style.display = 'none';
+            document.querySelector('[data-action="upload"]').style.display = 'none';
             renderIcons();
         }
 
@@ -1256,6 +1336,110 @@
             img.src = svgUrl;
         }
 
+
+        // Upload Icon Functions
+        let uploadedSVG = null;
+
+        function openUploadModal() {
+            document.getElementById('uploadModal').classList.add('active');
+            document.getElementById('uploadIconName').value = '';
+            document.getElementById('svgFileInput').value = '';
+            document.getElementById('uploadPreview').innerHTML = '<span style="color: rgba(255, 255, 255, 0.4); font-size: 14px;">No file selected</span>';
+            document.getElementById('uploadButton').disabled = true;
+            uploadedSVG = null;
+        }
+
+        function closeUploadModal() {
+            document.getElementById('uploadModal').classList.remove('active');
+        }
+
+        // Handle file selection
+        document.addEventListener('DOMContentLoaded', () => {
+            const fileInput = document.getElementById('svgFileInput');
+            const nameInput = document.getElementById('uploadIconName');
+            
+            fileInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                if (!file.name.endsWith('.svg')) {
+                    alert('Please upload an SVG file');
+                    fileInput.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const svgContent = event.target.result;
+                    uploadedSVG = svgContent;
+                    
+                    // Show preview
+                    const preview = document.getElementById('uploadPreview');
+                    preview.innerHTML = svgContent;
+                    
+                    // Auto-fill name from filename if empty
+                    if (!nameInput.value) {
+                        const fileName = file.name.replace('.svg', '').replace(/[^a-zA-Z0-9-]/g, '-');
+                        nameInput.value = fileName;
+                    }
+                    
+                    // Enable upload button if we have both name and SVG
+                    checkUploadReady();
+                };
+                reader.readAsText(file);
+            });
+            
+            nameInput.addEventListener('input', checkUploadReady);
+        });
+
+        function checkUploadReady() {
+            const name = document.getElementById('uploadIconName').value.trim();
+            const button = document.getElementById('uploadButton');
+            button.disabled = !(name && uploadedSVG);
+        }
+
+        async function confirmUpload() {
+            const iconName = document.getElementById('uploadIconName').value.trim();
+            
+            if (!iconName) {
+                alert('Please enter an icon name');
+                return;
+            }
+            
+            if (!uploadedSVG) {
+                alert('Please select an SVG file');
+                return;
+            }
+            
+            // Check if icon already exists
+            if (ALL_ICONS[iconName]) {
+                const overwrite = confirm(`An icon named "${iconName}" already exists. Overwrite it?`);
+                if (!overwrite) return;
+            }
+            
+            const button = document.getElementById('uploadButton');
+            button.disabled = true;
+            button.textContent = 'Uploading...';
+            
+            // Add to ALL_ICONS
+            ALL_ICONS[iconName] = uploadedSVG;
+            
+            // Re-sort to maintain alphabetical order
+            ALL_ICONS = sortObjectByKeys(ALL_ICONS);
+            
+            // Save to GitHub
+            await saveIcons();
+            
+            button.disabled = false;
+            button.textContent = 'Upload Icon';
+            
+            closeUploadModal();
+            renderIcons();
+            
+            // Show success message
+            alert(`Icon "${iconName}" uploaded successfully!`);
+        }
+
         // Admin dropdown handling
         const adminButton = document.getElementById('adminButton');
         const adminMenu = document.getElementById('adminMenu');
@@ -1275,6 +1459,8 @@
                     openPasswordModal();
                 } else if (action === 'logout') {
                     logout();
+                } else if (action === 'upload') {
+                    openUploadModal();
                 }
                 
                 adminMenu.classList.remove('active');
@@ -1363,12 +1549,19 @@
             }
         });
 
+        document.getElementById('uploadModal').addEventListener('click', (e) => {
+            if (e.target.id === 'uploadModal') {
+                closeUploadModal();
+            }
+        });
+
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 closeModal();
                 closePasswordModal();
                 closeRenameModal();
                 closeConfirmModal();
+                closeUploadModal();
                 adminMenu.classList.remove('active');
                 iconSetMenu.classList.remove('active');
                 colorMenu.classList.remove('active');
